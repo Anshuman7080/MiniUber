@@ -3,8 +3,9 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 const authProxy = require("./routes/authProxy");
+const userProxy = require("./routes/userProxy");
 const limiter = require("./middleware/rateLimiter");
-
+const authMiddleware = require("./middleware/authMiddleware");
 dotenv.config();
 
 const app = express();
@@ -26,6 +27,9 @@ app.use(morgan("dev"));
 
 
 app.use("/api/v1/auth", authProxy);
+app.use("/api/v1/riders", authMiddleware, userProxy);
+
+
 
 app.get("/", (req, res) => {
   return res.json({

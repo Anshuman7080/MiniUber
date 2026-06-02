@@ -6,6 +6,9 @@ const {generateOtp}=require("../services/otpService")
 const Otp=require("../models/otpSchema")
 const emailVerificationTemplate=require("../utils/emailVerificationTemplate")
 const jwt = require('jsonwebtoken');
+const { createRiderProfile } = require("../services/userService");
+
+
 
 const signUp = async (req, res) => {
   try {
@@ -34,6 +37,9 @@ const signUp = async (req, res) => {
       password: hashedPassword,
       role,
     });
+
+    // Create a rider profile
+    await createRiderProfile(newUser._id, newUser.name);
 
     const otp = await generateOtp(newUser._id);
     await Otp.create({ userId: newUser._id, otp, expiresAt: Date.now() + 10 * 60 * 1000 });

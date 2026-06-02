@@ -5,7 +5,9 @@ const authMiddleware=(req,res,next)=>{
     try{
 
         let token;
-        const authHeader=req.header.authorization;
+        const authHeader = req.headers.authorization;
+
+        console.log("Auth Header at Gateway:", authHeader)
 
         if(authHeader && authHeader.startsWith("Bearer ")){
             token=authHeader.split(" ")[1];
