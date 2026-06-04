@@ -12,7 +12,7 @@ const { createRiderProfile } = require("../services/userService");
 
 const signUp = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password} = req.body;
 
     if (!name || !email || !password ) {
       return res.status(400).json({
@@ -184,7 +184,7 @@ const login=async(req,res)=>{
             const payload={
                 userId:user._id,
                 role:user.role,
-
+                name:user.name,
             }
            const token=jwt.sign(payload,process.env.JWT_SECRET_KEY,{expiresIn:"1d"})
 
@@ -216,4 +216,39 @@ const login=async(req,res)=>{
     }
 }
 
-module.exports={signUp,verifyEmail,login}
+
+const updateUserRole = async (req, res) => {
+  try {
+
+    const { userId, role } = req.body;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    user.role = role;
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Role updated successfully"
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
+    });
+  }
+};
+
+module.exports={signUp,verifyEmail,login,updateUserRole}

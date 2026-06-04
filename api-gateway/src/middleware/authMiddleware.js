@@ -2,7 +2,10 @@ const jwt=require("jsonwebtoken")
 
 
 const authMiddleware=(req,res,next)=>{
+    
     try{
+
+
 
         let token;
         const authHeader = req.headers.authorization;

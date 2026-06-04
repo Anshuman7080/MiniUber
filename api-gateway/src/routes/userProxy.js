@@ -16,6 +16,7 @@ const userProxy=createProxyMiddleware({
             console.log(`[Gateway] Forwarding ${req.method} ${req.originalUrl} to User Service`)
 
             if(req.user){
+                
                 proxyReq.setHeader("x-user-id",req.user.userId)
                 proxyReq.setHeader("x-user-role",req.user.role)
             }

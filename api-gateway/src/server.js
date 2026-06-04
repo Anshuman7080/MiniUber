@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const morgan = require("morgan");
 const authProxy = require("./routes/authProxy");
 const userProxy = require("./routes/userProxy");
+const driverProxy=require("./routes/driverProxy")
 const limiter = require("./middleware/rateLimiter");
 const authMiddleware = require("./middleware/authMiddleware");
 dotenv.config();
@@ -20,16 +21,20 @@ app.use(cors());
 
 app.use(morgan("dev"));
 
-// app.use("/api/v1/auth", (req, res, next) => {
-//   console.log("AUTH ROUTE HIT");
+// app.use("/api/v1/riders", (req, res, next) => {
+//   console.log("riders ROUTE HIT");
 //   next();
 // });
 
+// app.use((req, res, next) => {
+//     console.log("REQUEST RECEIVED:", req.method, req.originalUrl);
+//     next();
+// });
 
 app.use("/api/v1/auth", authProxy);
 app.use("/api/v1/riders", authMiddleware, userProxy);
 
-
+app.use("/api/v1/drivers",authMiddleware,driverProxy);
 
 app.get("/", (req, res) => {
   return res.json({
