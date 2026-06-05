@@ -244,10 +244,84 @@ const approveDriver = async (req, res) => {
   }
 };
 
+
+
+const getAvailableDrivers = async (req,res) => {
+
+    try {
+
+        const drivers = await Driver.find({
+            isApproved:true,
+            isAvailable:true
+        });
+
+        console.log("Coming here");
+
+        return res.status(200).json({
+            success:true,
+            drivers
+        });
+
+    } catch(error) {
+
+        console.log(error);
+
+        return res.status(500).json({
+            success:false,
+            message:"Internal Server Error"
+        });
+    }
+};
+
+
+const updateAvailability = async (req, res) => {
+
+    try {
+
+        const { driverId } = req.params;
+
+        const { isAvailable } = req.body;
+
+        const driver = await Driver.findOne({
+            userId: driverId
+        });
+
+        if (!driver) {
+            return res.status(404).json({
+                success: false,
+                message: "Driver not found"
+            });
+        }
+
+        driver.isAvailable = isAvailable;
+
+        await driver.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Availability updated",
+            driver
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
+
+
 module.exports = {
   applyDriver,
   getDriverProfile,
   updateDriverProfile,
   toggleAvailability,
-  approveDriver
+  approveDriver,
+  getAvailableDrivers,
+  updateAvailability
 };
