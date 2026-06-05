@@ -4,10 +4,13 @@ const RideRequest=require("../models/rideRequestSchema")
 const {calculateFare}=require("../utils/fareCalculator");
 const {getAvailableDrivers}=require("../clients/driverServiceClient")
 const {updateDriverAvailability}=require("../clients/driverServiceClient")
+const { updateDriverRating } = require("../clients/driverServiceClient");
+const { updateRiderRating } = require("../clients/riderServiceClient");
 
 const createRide=async(req,res)=>{
     try{
          const riderId=req.headers["x-user-id"]
+         console.log("riderId is",riderId);
 
          if(!riderId){
             return res.status(401).json({
@@ -663,6 +666,155 @@ const driverCancelRide = async (req, res) => {
 };
 
 
+
+
+const rateDriver = async (req, res) => {
+
+    try {
+
+        const { rideId } = req.params;
+
+        const riderId = req.headers["x-user-id"];
+
+        const { rating } = req.body;
+
+        if (!rating || rating < 1 || rating > 5) {
+            return res.status(400).json({
+                success: false,
+                message: "Rating must be between 1 and 5"
+            });
+        }
+
+        const ride = await Ride.findById(rideId);
+
+        if (!ride) {
+            return res.status(404).json({
+                success: false,
+                message: "Ride not found"
+            });
+        }
+
+        if (ride.riderId !== riderId) {
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
+
+        if (ride.status !== "COMPLETED") {
+            return res.status(400).json({
+                success: false,
+                message: "Ride is not completed"
+            });
+        }
+
+        if (ride.riderRating) {
+            return res.status(400).json({
+                success: false,
+                message: "Driver already rated"
+            });
+        }
+
+        ride.riderRating = rating;
+
+        await ride.save();
+
+        await updateDriverRating(
+            ride.driverId,
+            rating
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Driver rated successfully"
+        });
+
+    } catch (error) {
+
+        console.log("Error rating driver", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
+
+
+
+const rateRider = async (req, res) => {
+
+    try {
+
+        const { rideId } = req.params;
+
+        const driverId = req.headers["x-user-id"];
+
+        const { rating } = req.body;
+
+        if (!rating || rating < 1 || rating > 5) {
+            return res.status(400).json({
+                success: false,
+                message: "Rating must be between 1 and 5"
+            });
+        }
+
+        const ride = await Ride.findById(rideId);
+
+        if (!ride) {
+            return res.status(404).json({
+                success: false,
+                message: "Ride not found"
+            });
+        }
+
+        if (ride.driverId !== driverId) {
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
+
+        if (ride.status !== "COMPLETED") {
+            return res.status(400).json({
+                success: false,
+                message: "Ride is not completed"
+            });
+        }
+
+        if (ride.driverRating) {
+            return res.status(400).json({
+                success: false,
+                message: "Rider already rated"
+            });
+        }
+
+        ride.driverRating = rating;
+
+        await ride.save();
+
+        await updateRiderRating(
+            ride.riderId,
+            rating
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Rider rated successfully"
+        });
+
+    } catch (error) {
+
+        console.log("Error rating rider", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
 module.exports = {
     createRide,
     getRideDetails,
@@ -673,5 +825,7 @@ module.exports = {
     startRide,
     completeRide,
     rejectRide,
-    driverCancelRide
+    driverCancelRide,
+    rateDriver,
+    rateRider
 };

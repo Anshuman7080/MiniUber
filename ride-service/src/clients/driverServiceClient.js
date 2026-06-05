@@ -22,7 +22,21 @@ const updateDriverAvailability = async (
     );
 };
 
+const updateDriverRating = async (
+    driverId,
+    rating
+) => {
+
+    return axios.patch(
+        `${process.env.DRIVER_SERVICE_URL}/rating/${driverId}`,
+        {
+            rating
+        }
+    );
+};
+
 module.exports = {
     getAvailableDrivers,
-    updateDriverAvailability
+    updateDriverAvailability,
+    updateDriverRating
 };

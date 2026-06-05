@@ -316,6 +316,61 @@ const updateAvailability = async (req, res) => {
 
 
 
+const updateDriverRating = async (req, res) => {
+    try {
+
+        const { driverId } = req.params;
+        const { rating } = req.body;
+
+        if (!rating || rating < 1 || rating > 5) {
+            return res.status(400).json({
+                success: false,
+                message: "Rating must be between 1 and 5"
+            });
+        }
+
+        const driver = await Driver.findOne({
+            userId: driverId
+        });
+
+        if (!driver) {
+            return res.status(404).json({
+                success: false,
+                message: "Driver not found"
+            });
+        }
+
+        const newRating =
+            (
+                (driver.rating * driver.totalTrips)
+                + rating
+            ) /
+            (driver.totalTrips + 1);
+
+        driver.rating = Number(newRating.toFixed(2));
+
+        driver.totalTrips += 1;
+
+        await driver.save();
+
+        return res.status(200).json({
+            success: true,
+            driver
+        });
+
+    } catch (error) {
+
+        console.log("Error updating driver rating", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
+
+
 module.exports = {
   applyDriver,
   getDriverProfile,
@@ -323,5 +378,6 @@ module.exports = {
   toggleAvailability,
   approveDriver,
   getAvailableDrivers,
-  updateAvailability
+  updateAvailability,
+  updateDriverRating
 };

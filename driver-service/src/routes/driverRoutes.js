@@ -2,7 +2,8 @@ const express=require("express")
 const router=express.Router()
 
 const {applyDriver,getDriverProfile,updateDriverProfile,
-    toggleAvailability,approveDriver,getAvailableDrivers,updateAvailability
+    toggleAvailability,approveDriver,getAvailableDrivers,updateAvailability,
+    updateDriverRating
 }=require("../controllers/driverController")
 
 const adminMiddleware=require("../middleware/adminMiddleware")
@@ -20,6 +21,8 @@ router.get("/internal/available-drivers",getAvailableDrivers);
 router.patch("/internal/availability/:driverId",  updateAvailability);
 
 router.patch("/approve/:driverId",adminMiddleware, approveDriver);
+
+router.patch("/internal/rating/:driverId",updateDriverRating);
 
 
 

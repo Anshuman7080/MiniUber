@@ -187,4 +187,69 @@ const deleteRider = async (req, res) => {
 };
 
 
-module.exports={ createRider, getRiderDetails, updateRiderDetails, deleteRider }
+
+const updateRiderRating = async (req, res) => {
+    try {
+
+        const { riderId } = req.params;
+
+        if(!riderId){
+          return res.status(404).json({
+            success:false,
+            message:"riderId required"
+          })
+        }
+        
+        const { rating } = req.body;
+
+        if (!rating || rating < 1 || rating > 5) {
+            return res.status(400).json({
+                success: false,
+                message: "Rating must be between 1 and 5"
+            });
+        }
+
+        const rider = await Rider.findOne({
+            userId: riderId
+        });
+
+        if (!rider) {
+            return res.status(404).json({
+                success: false,
+                message: "Rider not found"
+            });
+        }
+
+        const newRating =
+            (
+                (rider.rating * rider.totalRides)
+                + rating
+            ) /
+            (rider.totalRides + 1);
+
+        rider.rating = Number(newRating.toFixed(2));
+
+        rider.totalRides += 1;
+
+        await rider.save();
+
+        return res.status(200).json({
+            success: true,
+            rider
+        });
+
+    } catch (error) {
+
+        console.log("Error updating rider rating", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
+
+
+
+module.exports={ createRider, getRiderDetails, updateRiderDetails, deleteRider,updateRiderRating }
