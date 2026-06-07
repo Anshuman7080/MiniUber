@@ -1,0 +1,12 @@
+node_modules/
+.env
+
+logs/
+*.log
+
+coverage/
+
+dist/
+build/
+
+.DS_Store

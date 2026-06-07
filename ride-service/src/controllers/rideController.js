@@ -6,6 +6,8 @@ const {getAvailableDrivers}=require("../clients/driverServiceClient")
 const {updateDriverAvailability}=require("../clients/driverServiceClient")
 const { updateDriverRating } = require("../clients/driverServiceClient");
 const { updateRiderRating } = require("../clients/riderServiceClient");
+const {sendNotification}=require("../clients/notificationServiceClient")
+
 
 const createRide=async(req,res)=>{
     try{
@@ -172,6 +174,15 @@ const cancelRide = async (req, res) => {
 
         await ride.save();
 
+        await sendNotification({
+            userId: ride.riderId,
+            userRole: "rider",
+            rideId: ride._id,
+            type: "RIDE_CANCELLED",
+            title: "Ride Cancelled",
+            message: reason || "Ride was cancelled"
+        });
+
         await RideStatusHistory.create({
             rideId: ride._id,
             status: "CANCELLED",
@@ -295,6 +306,16 @@ const acceptRide=async(req,res)=>{
         ride.acceptedAt=new Date();
         
         await ride.save();
+
+        await sendNotification({
+            userId:ride.riderId,
+            userRole:"rider",
+            rideId:ride._id,
+            type:"DRIVER_ASSIGNED",
+            title:"Driver Assigned",
+            message:"A driver has accepted your ride request"
+
+        });
 
         await updateDriverAvailability(
                 driverId,
@@ -422,6 +443,15 @@ const driverArrived = async (req, res) => {
 
         await ride.save();
 
+        await sendNotification({
+            userId: ride.riderId,
+            userRole: "rider",
+            rideId: ride._id,
+            type: "DRIVER_ARRIVED",
+            title: "Driver Arrived",
+            message: "Your driver has arrived"
+        });
+
         await RideStatusHistory.create({
             rideId: ride._id,
             status: "DRIVER_ARRIVED",
@@ -490,6 +520,15 @@ const startRide = async (req, res) => {
 
         await ride.save();
 
+        await sendNotification({
+            userId: ride.riderId,
+            userRole: "rider",
+            rideId: ride._id,
+            type: "RIDE_STARTED",
+            title: "Ride Started",
+            message: "Your ride has started"
+        });
+
         await RideStatusHistory.create({
             rideId: ride._id,
             status: "IN_PROGRESS",
@@ -551,6 +590,15 @@ const completeRide = async (req, res) => {
         ride.finalFare = ride.estimatedFare;
 
         await ride.save();
+        
+        await sendNotification({
+            userId: ride.riderId,
+            userRole: "rider",
+            rideId: ride._id,
+            type: "RIDE_COMPLETED",
+            title: "Ride Completed",
+            message: "Thank you for riding with us"
+        });
 
         await updateDriverAvailability(
                 driverId,

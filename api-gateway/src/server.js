@@ -8,6 +8,8 @@ const driverProxy=require("./routes/driverProxy")
 const limiter = require("./middleware/rateLimiter");
 const authMiddleware = require("./middleware/authMiddleware");
 const rideProxy=require("./routes/rideProxy");
+const notificationProxy=require("./routes/notificationProxy");
+
 dotenv.config();
 
 const app = express();
@@ -38,6 +40,8 @@ app.use("/api/v1/riders", authMiddleware, userProxy);
 app.use("/api/v1/drivers",authMiddleware,driverProxy);
 
 app.use("/api/v1/rides",authMiddleware,rideProxy);
+
+app.use("/api/v1/notifications",authMiddleware,notificationProxy);
 
 
 app.get("/", (req, res) => {
