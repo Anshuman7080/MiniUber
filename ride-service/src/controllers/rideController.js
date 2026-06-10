@@ -270,6 +270,18 @@ const cancelRide = async (req, res) => {
 
         await ride.save();
 
+        const io=getIO();
+
+        io.to(`driver:${ride.driverId}`).
+        emit(
+            "ride-cancelled",
+            {
+                rideId,
+                cancelledBy:"rider",
+                reason:ride.cancellationReason
+            }
+        )
+
         await sendNotification({
             userId: ride.riderId,
             userRole: "rider",
@@ -636,6 +648,16 @@ const driverArrived = async (req, res) => {
             note: "Driver arrived at pickup location"
         });
 
+
+        const io=getIo();
+        io.to(`rider:${ride.riderId}`).
+        emit("driver-arrived",
+            {
+                rideId,
+                status:"DRIVER_ARRIVED"
+            }
+        )
+
         return res.status(200).json({
             success: true,
             message: "Driver arrival recorded"
@@ -713,6 +735,19 @@ const startRide = async (req, res) => {
             note: "Ride started"
         });
 
+
+        const io=getIO();
+
+        io.to(
+            `rider:${ride.riderId}`
+        ).emit(
+            "ride-started",
+            {
+                rideId,
+                status:"IN_PROGRESS"
+            }
+        )
+
         return res.status(200).json({
             success: true,
             message: "Ride started"
@@ -763,7 +798,7 @@ const completeRide = async (req, res) => {
         ride.status = "COMPLETED";
         ride.completedAt = new Date();
 
-        // Fixed pricing version
+       
         ride.finalFare = ride.estimatedFare;
 
         await ride.save();
@@ -788,6 +823,18 @@ const completeRide = async (req, res) => {
             changedBy: "driver",
             note: "Ride completed"
         });
+        
+         const io=getIO();
+         
+         io.to(
+            `rider:${ride.riderId}`
+         ).emit(
+            "ride-completed",
+            {
+                rideId,
+                finalFare:ride.finalFare
+            }
+         )
 
         return res.status(200).json({
             success: true,
@@ -860,6 +907,20 @@ const driverCancelRide = async (req, res) => {
             reason || "Cancelled by driver";
 
         await ride.save();
+
+        const io = getIO();
+
+        io.to(
+            `rider:${ride.riderId}`
+        ).emit(
+            "ride-cancelled",
+            {
+                rideId,
+                cancelledBy: "driver",
+                reason:
+                    ride.cancellationReason
+            }
+        );
 
         await RideStatusHistory.create({
             rideId: ride._id,
@@ -1095,7 +1156,6 @@ const updateDriverLocation=async(req,res)=>{
     }
 }
 
-
 const setDriverOnline=async(req,res)=>{
     try{
 
@@ -1125,6 +1185,7 @@ const setDriverOnline=async(req,res)=>{
         })
     }
 }
+
 
 const setDriverOffline=async(req,res)=>{
     try{

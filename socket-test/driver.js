@@ -8,7 +8,7 @@ socket.on("connect",()=>{
     socket.emit(
         "join-room",
         {
-            userId:"driver1",
+            userId:"6a24dad15a67ba935b3a4f36",
             role:"driver"
         }
     )
@@ -28,3 +28,29 @@ socket.on("connect",()=>{
     )
 
 })
+
+
+socket.on(
+    "ride-cancelled",
+    (data) => {
+
+        console.log(
+            "Ride Cancelled"
+        );
+
+        console.log(data);
+    }
+);
+
+
+setInterval(()=>{
+    socket.emit(
+        "location-update",
+        {
+            rideId:"6a2648ce4a5f2b2df1fbec44",
+            latitude:25.3176,
+            longitude:82.9739
+
+        }
+    )
+},5000);
